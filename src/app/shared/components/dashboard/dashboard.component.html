@@ -1,0 +1,74 @@
+<div class="dashboard-container">
+  <header class="dashboard-header">
+    <h1>{{ appName }}</h1>
+    <div class="user-info" *ngIf="currentUser">
+      <span>Bienvenido, {{ currentUser.username }}!</span>
+      <span class="role-badge" [class]="'role-' + currentUser.role">{{ currentUser.role.toUpperCase() }}</span>
+      <button (click)="logout()" class="logout-btn">Cerrar Sesión</button>
+    </div>
+  </header>
+  
+  <nav class="sidebar">
+    <ul class="nav-menu">
+      <li><a routerLink="/dashboard" routerLinkActive="active">Dashboard</a></li>
+      <li><a routerLink="/users" routerLinkActive="active" *ngIf="hasAccess(['admin', 'manager'])">Users</a></li>
+      <li><a routerLink="/products" routerLinkActive="active">Products</a></li>
+      <li><a routerLink="/providers" routerLinkActive="active">Providers</a></li>
+      <li><a routerLink="/accounting" routerLinkActive="active" *ngIf="hasAccess(['admin', 'manager'])">Accounting</a></li>
+    </ul>
+  </nav>
+  
+  <main class="main-content">
+    <div class="dashboard-grid">
+      <div class="card">
+        <h3>Products</h3>
+        <p>Manage your product catalog</p>
+        <a routerLink="/products" class="card-link">Go to Products</a>
+      </div>
+      
+      <div class="card">
+        <h3>Providers</h3>
+        <p>Manage your suppliers and vendors</p>
+        <a routerLink="/providers" class="card-link">Go to Providers</a>
+      </div>
+      
+      <div class="card" *ngIf="hasAccess(['admin', 'manager'])">
+        <h3>Accounting</h3>
+        <p>Financial management and reports</p>
+        <a routerLink="/accounting" class="card-link">Go to Accounting</a>
+      </div>
+      
+      <div class="card" *ngIf="hasAccess(['admin', 'manager'])">
+        <h3>Users</h3>
+        <p>User management and permissions</p>
+        <a routerLink="/users" class="card-link">Go to Users</a>
+      </div>
+    </div>
+
+    <div class="debug-section" *ngIf="currentUser">
+      <button (click)="toggleDebug()" class="debug-toggle">
+        {{ showDebug ? 'Ocultar' : 'Mostrar' }} Info Debug
+      </button>
+      
+      <div class="debug-info" *ngIf="showDebug">
+        <h3>🔍 Información de Debug</h3>
+        <div class="debug-item">
+          <strong>Usuario:</strong> {{ currentUser.username }}
+        </div>
+        <div class="debug-item">
+          <strong>Rol:</strong> {{ currentUser.role }}
+        </div>
+        <div class="debug-item">
+          <strong>Token (primeros 50 chars):</strong> {{ debugInfo.token }}
+        </div>
+        <div class="debug-item">
+          <strong>Autenticado:</strong> {{ debugInfo.isAuthenticated }}
+        </div>
+        <div class="debug-item">
+          <strong>Payload JWT:</strong>
+          <pre>{{ debugInfo.tokenPayload | json }}</pre>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

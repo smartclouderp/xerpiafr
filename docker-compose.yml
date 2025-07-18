@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  xerpia-erp-frontend:
+    build: .
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./.env:/usr/share/nginx/html/.env:ro
+    depends_on:
+      - xerpia-api
+    networks:
+      - xerpia-network
+
+  xerpia-api:
+    # This would be your backend API service
+    # image: your-api-image:latest
+    # ports:
+    #   - "3000:3000"
+    # environment:
+    #   - NODE_ENV=production
+    #   - DATABASE_URL=postgresql://user:password@db:5432/xerpia_erp
+    # depends_on:
+    #   - db
+    # networks:
+    #   - xerpia-network
+    image: nginx:alpine
+    ports:
+      - "3000:80"
+    networks:
+      - xerpia-network
+
+  # db:
+  #   image: postgres:15-alpine
+  #   environment:
+  #     - POSTGRES_DB=xerpia_erp
+  #     - POSTGRES_USER=postgres
+  #     - POSTGRES_PASSWORD=password
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
+  #   networks:
+  #     - xerpia-network
+
+networks:
+  xerpia-network:
+    driver: bridge
+
+# volumes:
+#   postgres_data:

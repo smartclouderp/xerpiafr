@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Xerpia ERP Login Test</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #2196F3;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        .test-button:hover {
+            background: #1976D2;
+        }
+        .result {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .success { background: #e8f5e8; border: 1px solid #4caf50; }
+        .error { background: #ffeaea; border: 1px solid #f44336; }
+        .info { background: #e3f2fd; border: 1px solid #2196f3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Xerpia ERP Login Test</h1>
+        <p>Test the login functionality with the following credentials:</p>
+        <ul>
+            <li><strong>Username:</strong> admin</li>
+            <li><strong>Password:</strong> 123456</li>
+            <li><strong>Endpoint:</strong> http://localhost/xerpia/public/login</li>
+        </ul>
+        
+        <button class="test-button" onclick="testLogin()">Test Login</button>
+        <button class="test-button" onclick="testCORS()">Test CORS</button>
+        <button class="test-button" onclick="testEndpoint()">Test Endpoint Availability</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function testLogin() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="info">Testing login...</div>';
+            
+            const credentials = {
+                username: 'admin',
+                password: '123456'
+            };
+            
+            console.log('🚀 Starting login test with:', credentials);
+            
+            try {
+                const response = await fetch('http://localhost/xerpia/public/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    mode: 'cors',
+                    body: JSON.stringify(credentials)
+                });
+                
+                console.log('📡 Response received:', response);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ JSON parsed:', result);
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+✅ Login Test SUCCESSFUL!
+
+Status: ${response.status} ${response.statusText}
+Headers: 
+${Array.from(response.headers.entries()).map(([key, value]) => `  ${key}: ${value}`).join('\n')}
+
+Response Body:
+${JSON.stringify(result, null, 2)}
+
+Token Preview: ${result.data?.accessToken ? result.data.accessToken.substring(0, 50) + '...' : 'No token'}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+❌ Login Test FAILED!
+
+Status: ${response.status} ${response.statusText}
+Response Body: ${JSON.stringify(result, null, 2)}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('💥 Login test error:', error);
+                
+                let errorDetails = '';
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    errorDetails = `
+🌐 NETWORK ERROR DETECTED:
+
+Possible causes:
+1. Backend server is not running on 'localhost'
+2. CORS policy blocking the request
+3. Wrong endpoint URL
+4. Firewall/proxy blocking the connection
+
+Error: ${error.message}
+
+Debugging steps:
+1. Check if http://localhost/xerpia/public/login is accessible
+2. Verify backend server is running
+3. Check browser console for CORS errors
+4. Try accessing the endpoint directly in browser
+                    `;
+                } else {
+                    errorDetails = `
+❌ UNEXPECTED ERROR:
+
+Type: ${error.name}
+Message: ${error.message}
+Stack: ${error.stack}
+                    `;
+                }
+                
+                resultDiv.innerHTML = `
+                    <div class="error">
+${errorDetails}
+                    </div>
+                `;
+            }
+        }
+        
+        async function testCORS() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="info">Testing CORS preflight...</div>';
+            
+            try {
+                const response = await fetch('http://localhost/xerpia/public/login', {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'Content-Type'
+                    }
+                });
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+✅ CORS Test Results:
+
+Status: ${response.status}
+CORS Headers:
+- Access-Control-Allow-Origin: ${response.headers.get('Access-Control-Allow-Origin') || 'Not Set'}
+- Access-Control-Allow-Methods: ${response.headers.get('Access-Control-Allow-Methods') || 'Not Set'}
+- Access-Control-Allow-Headers: ${response.headers.get('Access-Control-Allow-Headers') || 'Not Set'}
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+❌ CORS Test Failed:
+
+${error.message}
+
+This indicates CORS is not properly configured on the backend.
+                    </div>
+                `;
+            }
+        async function testEndpoint() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="info">Testing endpoint availability...</div>';
+            
+            try {
+                const response = await fetch('http://localhost/xerpia/public/login', {
+                    method: 'GET',
+                    mode: 'no-cors'
+                });
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+✅ Endpoint is reachable!
+
+The server is responding at http://localhost/xerpia/public/login
+You can now try the login test.
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+❌ Endpoint NOT reachable:
+
+${error.message}
+
+Please check:
+1. Is your backend server running?
+2. Is it accessible at http://localhost/xerpia/public/?
+3. Are there any firewall restrictions?
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
